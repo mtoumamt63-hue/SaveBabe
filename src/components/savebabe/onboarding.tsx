@@ -121,7 +121,7 @@ export function Sync() {
     const t = setTimeout(() => setDone((d) => d + 1), 700);
     return () => clearTimeout(t);
   }, [done, paused]);
-  useEffect(() => { if (done >= items.length) { const t = setTimeout(() => go("ready"), 800); return () => clearTimeout(t); } }, [done]);
+  useEffect(() => { if (done < items.length) return; const t = setTimeout(() => go("ready"), 800); return () => clearTimeout(t); }, [done]);
   return (
     <div className="pt-6">
       <Steps n={4} />

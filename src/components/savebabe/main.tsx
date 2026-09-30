@@ -417,16 +417,19 @@ export function Offline() {
 }
 
 /* ---------- 23 Language ---------- */
-const regions: Record<string, { c: string[]; l: string[] }> = {
+type R = { c: string[]; l: string[] };
+const regionsRaw: Record<string, R> = {
   "Afrique de l'Ouest": { c: ["Côte d'Ivoire", "Sénégal", "Mali", "Burkina Faso", "Bénin", "Togo", "Niger", "Guinée", "Nigeria", "Ghana"], l: ["Français", "Wolof", "Bambara", "Dioula", "Mooré", "Fon", "Haoussa", "Yoruba", "Peul"] },
   "Afrique Centrale": { c: ["Cameroun", "Tchad", "Gabon", "Congo", "RD Congo", "Centrafrique"], l: ["Français", "Lingala", "Sango", "Ewondo", "Arabe tchadien"] },
   "Afrique de l'Est": { c: ["Kenya", "Tanzanie", "Éthiopie", "Rwanda", "Ouganda"], l: ["Swahili", "Amharique", "Kinyarwanda", "English"] },
   "Afrique Australe": { c: ["Afrique du Sud", "Mozambique", "Zambie", "Madagascar"], l: ["Zoulou", "Xhosa", "Português", "Malagasy", "English"] },
   "Afrique du Nord": { c: ["Maroc", "Algérie", "Tunisie", "Égypte"], l: ["العربية", "Tamazight", "Français"] },
 };
+const regions = regionsRaw as Record<string, R> & { [k: string]: R };
+const reg = (k: string): R => regionsRaw[k] ?? { c: [""], l: [""] };
 export function Language() {
   const { s, set, go } = useSB();
-  const initR = Object.keys(regions).find((r) => regions[r].c.includes(s.country)) ?? "Afrique de l'Ouest";
+  const initR = Object.keys(regions).find((r) => reg(r).c.includes(s.country)) ?? "Afrique de l'Ouest";
   const [r, setR] = useState(initR);
   const [c, setC] = useState(s.country);
   const [l, setL] = useState(s.language);
@@ -434,11 +437,11 @@ export function Language() {
     <div className="pt-4">
       <Header title="Mes préférences linguistiques" back={s.onboarded ? "profile" : "welcome"} />
       <p className="mb-2 text-sm font-semibold">Région</p>
-      <div className="mb-4 flex flex-wrap gap-2">{Object.keys(regions).map((x) => <button key={x} onClick={() => { setR(x); setC(regions[x].c[0]); setL(regions[x].l[0]); }} className={cn("rounded-full border px-3 py-1.5 text-sm", r === x ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card")}>{x}</button>)}</div>
+      <div className="mb-4 flex flex-wrap gap-2">{Object.keys(regions).map((x) => <button key={x} onClick={() => { setR(x); setC(reg(x).c[0] ?? ""); setL(reg(x).l[0] ?? ""); }} className={cn("rounded-full border px-3 py-1.5 text-sm", r === x ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card")}>{x}</button>)}</div>
       <p className="mb-2 text-sm font-semibold">Choisir mon pays</p>
-      <select value={c} onChange={(e) => setC(e.target.value)} className="mb-4 w-full rounded-2xl border border-input bg-card px-4 py-3">{regions[r].c.map((x) => <option key={x}>{x}</option>)}</select>
+      <select value={c} onChange={(e) => setC(e.target.value)} className="mb-4 w-full rounded-2xl border border-input bg-card px-4 py-3">{reg(r).c.map((x) => <option key={x}>{x}</option>)}</select>
       <p className="mb-2 text-sm font-semibold">Langue de l'application</p>
-      <div className="mb-4 grid grid-cols-2 gap-2">{regions[r].l.map((x) => <button key={x} onClick={() => setL(x)} className={cn("rounded-2xl border py-3 text-sm", l === x ? "border-primary bg-secondary font-semibold text-primary" : "border-input bg-card")}>{x}</button>)}</div>
+      <div className="mb-4 grid grid-cols-2 gap-2">{reg(r).l.map((x) => <button key={x} onClick={() => setL(x)} className={cn("rounded-2xl border py-3 text-sm", l === x ? "border-primary bg-secondary font-semibold text-primary" : "border-input bg-card")}>{x}</button>)}</div>
       <Card className="mb-4 flex items-center gap-2 p-3 text-sm"><Download className="h-4 w-4 text-primary" /> Pack hors connexion « {l} » disponible</Card>
       <Btn onClick={() => { set({ country: c, language: l }); toast.success(`Langue : ${l}`); go(s.onboarded ? "profile" : "signup"); }}>Enregistrer mes préférences</Btn>
     </div>
